@@ -2,12 +2,14 @@ package com.example.domain.usecases
 
 import com.example.domain.entities.ToDoItem
 import com.example.domain.repositories.ToDoRepository
-import com.example.domain.usecases.base.CompletableUseCase
 import io.reactivex.Completable
-import javax.inject.Inject
+import io.reactivex.Observable
 
-class UpdateToDoItemUseCase @Inject constructor(private val repository: ToDoRepository): CompletableUseCase<ToDoItem> {
-    override fun executeUseCase(param: ToDoItem): Completable {
-        return repository.updateToDoItem(param)
+class UpdateToDoItemUseCase(private val repository: ToDoRepository) :
+    BaseUseCase<UpdateToDoItemUseCase.Request, Int> {
+    override fun execute(request: Request): Observable<Int> {
+        return repository.updateToDoItem(request.toDoItem)
     }
+
+    data class Request(val toDoItem: ToDoItem) : BaseUseCase.BaseRequest
 }

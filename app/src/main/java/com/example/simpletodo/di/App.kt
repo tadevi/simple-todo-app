@@ -3,7 +3,7 @@ package com.example.simpletodo.di
 import android.app.Application
 
 class App : Application() {
-    val appComponent by lazy {
+    val appComponent: AppComponent by lazy {
         DaggerAppComponent.builder()
             .appModule(AppModule(this))
             .build()

@@ -3,48 +3,45 @@ package com.example.simpletodo.ui.addToDo
 import com.example.domain.entities.ToDoItem
 import com.example.domain.usecases.InsertToDoItemUseCase
 import com.example.domain.usecases.UpdateToDoItemUseCase
+import com.example.simpletodo.base.BaseMvpPresenter
+import io.reactivex.CompletableObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 
-class AddToDoPresenter @Inject constructor(
+class AddToDoPresenter(
     private val updateToDoItemUseCase: UpdateToDoItemUseCase,
     private val insertToDoItemUseCase: InsertToDoItemUseCase
 ) :
-    Contract.Presenter {
+    BaseMvpPresenter<Contract.View>() {
     private var view: Contract.View? = null
-    private val compositeDisposable = CompositeDisposable()
 
-    override fun updateOrInsertData(toDoItem: ToDoItem, update: Boolean) {
-        val useCase = if (update) updateToDoItemUseCase else insertToDoItemUseCase
+    fun updateOrInsertData(toDoItem: ToDoItem, update: Boolean) {
+        val subscriber = object : BaseObserver<Int> {
+            override fun onComplete() {
 
-        val disposable = useCase
-            .executeUseCase(toDoItem)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    getView()?.onUpdateDataSuccess()
-                },
-                {
-                    getView()?.onUpdateDataError(it)
-                }
+            }
+            override fun onSuccess(data: Int) {
+                getView()?.onUpdateDataSuccess()
+            }
+
+            override fun onError(error: Throwable) {
+                getView()?.onUpdateDataError(error)
+            }
+        }
+        if (update) {
+            executeUseCase(
+                updateToDoItemUseCase,
+                UpdateToDoItemUseCase.Request(toDoItem),
+                subscriber
             )
-
-        compositeDisposable.add(disposable)
-    }
-
-    override fun onAttach(view: Contract.View) {
-        this.view = view
-    }
-
-    override fun onDetach() {
-        this.view = null
-        compositeDisposable.dispose()
-    }
-
-    override fun getView(): Contract.View? {
-        return view
+        } else {
+            executeUseCase(
+                insertToDoItemUseCase,
+                InsertToDoItemUseCase.Request(toDoItem),
+                subscriber
+            )
+        }
     }
 }

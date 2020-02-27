@@ -3,4 +3,10 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+    <color name="orange">#FF7F00</color>
+    <color name="nightRider">#303030</color>
+    <color name="blueLight">#5677fc</color>
+    <color name="blueBright">#03a9f4</color>
 </resources>

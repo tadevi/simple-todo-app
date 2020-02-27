@@ -5,8 +5,8 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 
 interface ToDoRepository {
-    fun updateToDoItem(toDoItem: ToDoItem): Completable
-    fun insertToDoItem(toDoItem: ToDoItem): Completable
-    fun deleteToDoItem(toDoItem: ToDoItem): Completable
+    fun updateToDoItem(toDoItem: ToDoItem): Observable<Int>
+    fun insertToDoItem(toDoItem: ToDoItem): Observable<Int>
+    fun deleteToDoItem(toDoItem: ToDoItem): Observable<Int>
     fun getToDoList(): Observable<List<ToDoItem>>
 }

@@ -1,43 +1,77 @@
 package com.example.simpletodo.ui.home
 
+import com.example.domain.entities.ToDoItem
+import com.example.domain.usecases.DeleteToDoItemUseCase
 import com.example.domain.usecases.GetToDoListUseCase
-import com.example.domain.usecases.base.NoParam
+import com.example.domain.usecases.InsertToDoItemUseCase
+import com.example.simpletodo.base.BaseMvpPresenter
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 
-class HomePresenter @Inject constructor(
-    private val getToDoListUseCase: GetToDoListUseCase
-) : Contract.Presenter {
-    private var mvpView: Contract.View? = null
-    private val compositeDisposable = CompositeDisposable()
-    override fun loadData() {
-        compositeDisposable.add(
-            getToDoListUseCase
-                .executeUseCase(NoParam())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(
-                    {
-                        getView()?.onRetrieveListTodoSuccess(it)
-                    },
-                    {
-                        getView()?.onRetrieveListTodoError(it)
+class HomePresenter constructor(
+    private val getToDoListUseCase: GetToDoListUseCase,
+    private val deleteToDoItemUseCase: DeleteToDoItemUseCase,
+    private val insertToDoItemUseCase: InsertToDoItemUseCase
+) : BaseMvpPresenter<Contract.View>() {
+    private var lastItemDeleted: ToDoItem? = null
+
+    fun loadData() {
+        executeUseCase(
+            getToDoListUseCase,
+            GetToDoListUseCase.Request(),
+            object : BaseObserver<List<ToDoItem>> {
+                override fun onComplete() {
+
+                }
+
+                override fun onSuccess(data: List<ToDoItem>) {
+                    getView()?.onRetrieveListTodoSuccess(data)
+                }
+
+                override fun onError(error: Throwable) {
+                    getView()?.onRetrieveListTodoError(error)
+                }
+            })
+    }
+
+    fun deleteItem(toDoItem: ToDoItem) {
+        executeUseCase(
+            deleteToDoItemUseCase,
+            DeleteToDoItemUseCase.Request(toDoItem),
+            object : BaseObserver<Int> {
+                override fun onComplete() {
+
+                }
+
+                override fun onSuccess(data: Int) {
+                    lastItemDeleted = toDoItem
+                    getView()?.onDeleteItemSuccess()
+                }
+
+                override fun onError(error: Throwable) {
+                    getView()?.onDeleteItemError(error)
+                }
+            })
+    }
+
+    fun undoItem() {
+        lastItemDeleted?.let {
+            executeUseCase(
+                insertToDoItemUseCase,
+                InsertToDoItemUseCase.Request(it),
+                object : BaseObserver<Int> {
+                    override fun onComplete() {
+
                     }
-                )
-        )
-    }
 
-    override fun onAttach(view: Contract.View) {
-        mvpView = view
-    }
+                    override fun onSuccess(data: Int) {
 
-    override fun onDetach() {
-        mvpView = null
-    }
+                    }
 
-    override fun getView(): Contract.View? {
-        return mvpView
+                    override fun onError(error: Throwable) {
+
+                    }
+                })
+        }
     }
 }

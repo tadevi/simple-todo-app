@@ -7,15 +7,15 @@ import io.reactivex.Observable
 
 @Dao
 interface ToDoDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(toDo: ToDo): Completable
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insert(toDo: ToDo)
 
     @Update
-    fun update(toDo: ToDo): Completable
+    fun update(toDo: ToDo): Int
 
     @Delete
-    fun delete(toDo: ToDo): Completable
+    fun delete(toDo: ToDo): Int
 
-    @Query("select * from todo_item")
+    @Query("select * from todo_item order by name ASC")
     fun getAllToDos(): Observable<List<ToDo>>
 }

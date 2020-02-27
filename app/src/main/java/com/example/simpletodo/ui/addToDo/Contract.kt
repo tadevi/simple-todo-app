@@ -1,17 +1,10 @@
 package com.example.simpletodo.ui.addToDo
 
-import com.example.domain.entities.ToDoItem
+import com.example.simpletodo.base.MvpView
 
 interface Contract {
-    interface View {
+    interface View : MvpView {
         fun onUpdateDataSuccess()
         fun onUpdateDataError(err: Throwable)
-    }
-
-    interface Presenter {
-        fun updateOrInsertData(toDoItem: ToDoItem, update: Boolean = false)
-        fun onAttach(view: View)
-        fun onDetach()
-        fun getView(): View?
     }
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="snackBarActionTextColor" format="color" />
+    <attr name="snackBarTextColor" format="color" />
+    <attr name="snackBarBgColor" format="color" />
+
+    <attr name="editBottomLineColor" format="color" />
+
+    <attr name="fabTint" format="color" />
+    <attr name="fabBgTint" format="color" />
+
+    <attr name="menuItemTextColor" format="color" />
+
+</resources>

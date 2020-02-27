@@ -2,13 +2,14 @@ package com.example.domain.usecases
 
 import com.example.domain.entities.ToDoItem
 import com.example.domain.repositories.ToDoRepository
-import com.example.domain.usecases.base.CompletableUseCase
 import io.reactivex.Completable
-import javax.inject.Inject
+import io.reactivex.Observable
 
-class DeleteToDoItemUseCase @Inject constructor(private val repository: ToDoRepository) :
-    CompletableUseCase<ToDoItem> {
-    override fun executeUseCase(param: ToDoItem): Completable {
-        return repository.deleteToDoItem(param)
+class DeleteToDoItemUseCase(private val repository: ToDoRepository) :
+    BaseUseCase<DeleteToDoItemUseCase.Request, Int> {
+    override fun execute(request: Request): Observable<Int> {
+        return repository.deleteToDoItem(request.toDoItem)
     }
+
+    data class Request(val toDoItem: ToDoItem) : BaseUseCase.BaseRequest
 }
