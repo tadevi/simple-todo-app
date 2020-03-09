@@ -6,6 +6,7 @@ import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Switch
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.domain.entities.ToDoItem
 import com.example.simpletodo.R
 import com.example.simpletodo.utils.formatDate
+import org.w3c.dom.Text
 import java.util.*
 
 
@@ -69,6 +71,9 @@ class ToDoViewHolder(
     private val tvAvatar: TextView by lazy {
         view.findViewById<TextView>(R.id.tvAvatar)
     }
+    private val swAwake: Switch by lazy {
+        view.findViewById<Switch>(R.id.swAwake)
+    }
 
     init {
         val typeface = Typeface.createFromAsset(view.context.assets, "fonts/Aller_Regular.ttf")
@@ -92,6 +97,8 @@ class ToDoViewHolder(
         tvAvatar.text = todo.name.firstOrNull()?.let {
             it.toUpperCase().toString()
         }
+        swAwake.isChecked = !todo.isFinish
+
 
         val drawable =
             ContextCompat.getDrawable(view.context, R.drawable.circle) as? GradientDrawable

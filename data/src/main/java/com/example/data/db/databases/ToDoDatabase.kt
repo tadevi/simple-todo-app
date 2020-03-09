@@ -2,11 +2,13 @@ package com.example.data.db.databases
 
 import android.content.Context
 import androidx.room.*
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.data.db.converters.CalendarConverter
 import com.example.data.db.daos.ToDoDao
 import com.example.data.db.entities.ToDo
 
-@Database(entities = [ToDo::class], version = 1, exportSchema = false)
+@Database(entities = [ToDo::class], version = 2, exportSchema = false)
 @TypeConverters(CalendarConverter::class)
 abstract class ToDoDatabase : RoomDatabase() {
     abstract fun getToDoDao(): ToDoDao

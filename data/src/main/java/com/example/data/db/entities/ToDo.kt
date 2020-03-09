@@ -6,8 +6,11 @@ import java.util.*
 
 @Entity(tableName = "todo_item")
 data class ToDo(
-    @PrimaryKey
     val name: String,
     val description: String,
-    val datetime: Calendar? = null
-)
+    val datetime: Calendar? = null,
+    val isFinish: Boolean = false
+) {
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0
+}

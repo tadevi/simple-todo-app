@@ -6,7 +6,6 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
-import androidx.appcompat.app.AppCompatActivity
 import com.example.domain.entities.ToDoItem
 import com.example.simpletodo.R
 import com.example.simpletodo.base.BaseActivity
@@ -14,8 +13,10 @@ import com.example.simpletodo.di.App
 import com.example.simpletodo.utils.*
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog
+import io.reactivex.Observable
+import io.reactivex.ObservableEmitter
+import io.reactivex.ObservableOnSubscribe
 import kotlinx.android.synthetic.main.activity_add_to_do.*
-import kotlinx.android.synthetic.main.activity_add_to_do.tvTime
 import java.util.*
 import javax.inject.Inject
 
@@ -23,14 +24,17 @@ import javax.inject.Inject
 class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
     CompoundButton.OnCheckedChangeListener, DatePickerDialog.OnDateSetListener,
     TimePickerDialog.OnTimeSetListener {
+
     companion object {
         private const val EXTRA_TODO_ITEM = "extra_todo_item"
-        fun startActivity(context: Context, toDoItem: ToDoItem? = null) {
+        fun startActivity(context: Context, toDoItem: ToDoItem? = null, flag: Int? = null) {
             val intent = Intent(context, AddToDoActivity::class.java)
+            intent.flags = flag ?: Intent.FLAG_ACTIVITY_NEW_TASK
             toDoItem?.let {
                 intent.putExtra(EXTRA_TODO_ITEM, it)
             }
             context.startActivity(intent)
+
         }
     }
 
@@ -39,6 +43,7 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
 
     var todoItem = ToDoItem()
     var editMode = false
+    var timeRemind: Calendar = Calendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,12 +66,12 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
 
     private fun initData() {
         if (intent.hasExtra(EXTRA_TODO_ITEM)) {
-            intent.getParcelableExtra<ToDoItem>(EXTRA_TODO_ITEM)?.let {
-                todoItem = it
+            intent.getSerializableExtra(EXTRA_TODO_ITEM)?.let {
+                todoItem = it as ToDoItem
                 editMode = true
             }
         }
-        swRemind.isChecked = todoItem.datetime != null
+        swRemind.isChecked = !todoItem.isFinish
         etName.setText(todoItem.name)
         etDesc.setText(todoItem.description)
         val calendar = Calendar.getInstance()
@@ -81,6 +86,7 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
         tvDate.typeface = typeface
         tvTime.typeface = typeface
         tvAdditional.typeface = typeface
+        
     }
 
     override fun onUpdateDataSuccess() {
@@ -88,7 +94,15 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
     }
 
     override fun onUpdateDataError(err: Throwable) {
-        DialogUtils.makeSimpleDialog(this, "Error", "Name of to do must not be the same or empty!")
+        DialogUtils.makeSimpleDialog(
+            this,
+            getString(R.string.title_error),
+            getString(R.string.message_error_name_must_not_empty_and_unique)
+        )
+    }
+
+    override fun subscribeToAlarmManager(toDoItem: ToDoItem) {
+        AlarmUtils.updateAlarm(this, todoItem)
     }
 
     override fun onDestroy() {
@@ -101,11 +115,13 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
             R.id.ibAdd -> {
                 todoItem = todoItem.copy(
                     name = etName.text.toString(),
-                    description = etDesc.text.toString()
+                    description = etDesc.text.toString(),
+                    datetime = if (swRemind.isChecked) timeRemind else null,
+                    isFinish = !swRemind.isChecked
                 )
-                if (todoItem.name.isNotEmpty())
+                if (todoItem.name.isNotEmpty()) {
                     presenter.updateOrInsertData(todoItem, editMode)
-                else {
+                } else {
                     finish()
                     return
                 }
@@ -126,6 +142,7 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
         when (buttonView?.id) {
             R.id.swRemind -> {
                 setVisibilityDateTime()
+                todoItem = todoItem.copy(isFinish = !isChecked)
             }
         }
     }
@@ -144,21 +161,24 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
 
     override fun onDateSet(view: DatePickerDialog?, year: Int, monthOfYear: Int, dayOfMonth: Int) {
         val now = Calendar.getInstance()
-        val calendar = todoItem.datetime ?: now
 
         if (year < now.get(Calendar.YEAR)
             || monthOfYear < now.get(Calendar.MONTH)
             || dayOfMonth < now.get(Calendar.DAY_OF_MONTH)
         ) {
-            DialogUtils.makeSimpleDialog(this, "Error", "The date you enter is in the past")
+            DialogUtils.makeSimpleDialog(
+                this,
+                getString(R.string.title_error),
+                getString(R.string.message_invalid_date_in_past)
+            )
         } else {
-            todoItem = todoItem.copy(datetime = calendar.apply {
+            timeRemind.apply {
                 set(Calendar.YEAR, year)
                 set(Calendar.MONTH, monthOfYear)
                 set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            })
+            }
 
-            todoItem.datetime?.let {
+            timeRemind.let {
                 tvDate.text = formatDate(it)
                 tvAdditional.text = resources.getString(
                     R.string.add_to_do_additional_reminded, formatDate(it),
@@ -170,16 +190,19 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
 
     override fun onTimeSet(view: TimePickerDialog?, hourOfDay: Int, minute: Int, second: Int) {
         val now = Calendar.getInstance()
-        val calendar = todoItem.datetime ?: now
         if (hourOfDay < now.get(Calendar.HOUR_OF_DAY) || minute < now.get(Calendar.MINUTE)) {
-            DialogUtils.makeSimpleDialog(this, "Error", "The time you enter was in the past!")
+            DialogUtils.makeSimpleDialog(
+                this,
+                getString(R.string.title_error),
+                getString(R.string.message_invalid_date_in_past)
+            )
         } else {
-            todoItem = todoItem.copy(datetime = calendar.apply {
+            timeRemind.apply {
                 set(Calendar.HOUR_OF_DAY, hourOfDay)
                 set(Calendar.MINUTE, minute)
-            })
+            }
 
-            todoItem.datetime?.let {
+            timeRemind.let {
                 tvTime.text = formatTime(it)
                 tvAdditional.text = resources.getString(
                     R.string.add_to_do_additional_reminded, formatDate(it),
@@ -187,6 +210,5 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
                 )
             }
         }
-
     }
 }

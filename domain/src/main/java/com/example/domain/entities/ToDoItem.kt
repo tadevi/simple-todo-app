@@ -1,12 +1,13 @@
 package com.example.domain.entities
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import java.io.Serializable
 import java.util.*
 
-@Parcelize
+
 data class ToDoItem(
+    val id: Int = 0,
     val name: String = "",
     val description: String = "",
-    val datetime: Calendar? = null
-) : Parcelable
+    val datetime: Calendar? = null,
+    val isFinish: Boolean = false
+) : Serializable

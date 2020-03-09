@@ -22,8 +22,10 @@ class AddToDoPresenter(
             override fun onComplete() {
 
             }
+
             override fun onSuccess(data: Int) {
                 getView()?.onUpdateDataSuccess()
+                getView()?.subscribeToAlarmManager(toDoItem)
             }
 
             override fun onError(error: Throwable) {
@@ -36,6 +38,7 @@ class AddToDoPresenter(
                 UpdateToDoItemUseCase.Request(toDoItem),
                 subscriber
             )
+
         } else {
             executeUseCase(
                 insertToDoItemUseCase,

@@ -10,4 +10,7 @@
     <string name="theme_key">theme</string>
     <string name="settings">Settings</string>
     <string name="reply_title">Theme Modes</string>
+    <string name="title_error">Error</string>
+    <string name="message_invalid_date_in_past">The date you enter is in the past</string>
+    <string name="message_error_name_must_not_empty_and_unique">Name of to do must not be the same or empty!</string>
 </resources>

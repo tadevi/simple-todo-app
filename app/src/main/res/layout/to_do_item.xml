@@ -26,7 +26,6 @@
         android:id="@+id/tvTime"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
         android:ellipsize="end"
         android:gravity="center"
         android:singleLine="true"
@@ -35,8 +34,7 @@
         android:textColor="@android:color/holo_blue_light"
         android:textSize="14sp"
         app:layout_constraintBaseline_toBaselineOf="@+id/tvName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintEnd_toStartOf="@+id/swAwake"
         app:layout_constraintStart_toEndOf="@+id/tvName" />
 
     <TextView
@@ -72,4 +70,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/tvAvatar"
         app:layout_constraintTop_toBottomOf="@+id/tvName" />
+
+    <Switch
+        android:id="@+id/swAwake"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        app:layout_constraintBottom_toBottomOf="@+id/tvTime"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvTime" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,12 +1,17 @@
 package com.example.simpletodo.ui.home
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.TaskStackBuilder
+import android.content.Context
 import android.content.Intent
-import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +25,7 @@ import com.example.simpletodo.ui.about.AboutActivity
 import com.example.simpletodo.ui.addToDo.AddToDoActivity
 import com.example.simpletodo.ui.setting.SettingActivity
 import com.example.simpletodo.utils.DialogUtils
+import com.example.simpletodo.utils.NotificationUtils
 import com.example.simpletodo.utils.SnackBarUtils
 import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
@@ -46,6 +52,7 @@ class HomeActivity : BaseActivity(), Contract.View {
 
         presenter.loadData()
     }
+
 
     private fun initUI() {
         val dividerItemDecoration = DividerItemDecoration(
