@@ -1,36 +1,34 @@
-package com.example.simpletodo.di
+package com.example.simpletodo.dagger
 
 import android.content.Context
 import com.example.data.db.daos.ToDoDao
 import com.example.data.db.databases.ToDoDatabase
 import com.example.data.repositories.ToDoRepositoryImpl
 import com.example.domain.repositories.ToDoRepository
-import com.example.simpletodo.di.scopes.ApplicationScope
+import com.example.simpletodo.dagger.scope.ApplicationScope
 import dagger.Module
 import dagger.Provides
-import javax.inject.Singleton
 
 @Module
-class AppModule(private val context: Context) {
+object AppModule {
     @Provides
     @ApplicationScope
-    fun provideContext(): Context = context.applicationContext
-
-    @Provides
-    @ApplicationScope
-    fun provideTodoDatabase(context: Context): ToDoDatabase {
+    @JvmStatic
+    fun provideDatabase(context: Context): ToDoDatabase {
         return ToDoDatabase.getDatabase(context)
     }
 
     @Provides
     @ApplicationScope
+    @JvmStatic
     fun provideDao(database: ToDoDatabase): ToDoDao {
         return database.getToDoDao()
     }
 
     @Provides
     @ApplicationScope
-    fun provideRepository(toDoDao: ToDoDao): ToDoRepository {
-        return ToDoRepositoryImpl(toDoDao)
+    @JvmStatic
+    fun provideRepository(dao: ToDoDao): ToDoRepository {
+        return ToDoRepositoryImpl(dao)
     }
 }

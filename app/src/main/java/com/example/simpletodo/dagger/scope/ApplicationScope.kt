@@ -1,7 +1,8 @@
-package com.example.simpletodo.di.scopes
+package com.example.simpletodo.dagger.scope
 
 import javax.inject.Scope
 
-@Scope
+
 @Retention(AnnotationRetention.RUNTIME)
+@Scope
 annotation class ApplicationScope

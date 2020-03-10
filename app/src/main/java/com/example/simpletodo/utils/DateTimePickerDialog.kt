@@ -1,7 +1,6 @@
 package com.example.simpletodo.utils
 
 
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog

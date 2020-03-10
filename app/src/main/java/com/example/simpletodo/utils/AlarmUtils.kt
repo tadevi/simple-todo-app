@@ -7,8 +7,6 @@ import android.content.Intent
 import androidx.core.app.AlarmManagerCompat
 import com.example.domain.entities.ToDoItem
 import com.example.simpletodo.broadcast.AlarmReceiver
-import com.example.simpletodo.ui.addToDo.AddToDoActivity
-import java.util.*
 
 object AlarmUtils {
     const val ALARM_ACTION = "com.example.simpletodo.alarm_action"

@@ -1,5 +1,6 @@
 package com.example.simpletodo.base
 
+import androidx.lifecycle.ViewModel
 import com.example.domain.usecases.BaseUseCase
 import io.reactivex.Observable
 import io.reactivex.Observer
@@ -8,11 +9,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import org.reactivestreams.Subscriber
-import org.reactivestreams.Subscription
 
-abstract class BaseMvpPresenter<T : MvpView> : MvpPresenter<T> {
-    private var mView: T? = null
+
+abstract class BaseViewModel : ViewModel() {
     protected val compositeDisposable = CompositeDisposable()
 
     interface BaseObserver<R> {
@@ -62,16 +61,8 @@ abstract class BaseMvpPresenter<T : MvpView> : MvpPresenter<T> {
         observable.subscribe(observer)
     }
 
-    override fun attachView(mvpView: T) {
-        this.mView = mvpView
-    }
-
-    override fun detachView() {
-        this.mView = null
+    override fun onCleared() {
+        super.onCleared()
         compositeDisposable.dispose()
-    }
-
-    override fun getView(): T? {
-        return this.mView
     }
 }

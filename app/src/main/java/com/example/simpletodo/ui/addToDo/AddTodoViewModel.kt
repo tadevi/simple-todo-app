@@ -1,21 +1,30 @@
 package com.example.simpletodo.ui.addToDo
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.domain.entities.ToDoItem
 import com.example.domain.usecases.InsertToDoItemUseCase
 import com.example.domain.usecases.UpdateToDoItemUseCase
-import com.example.simpletodo.base.BaseMvpPresenter
-import io.reactivex.CompletableObserver
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import com.example.simpletodo.base.BaseViewModel
+import com.example.simpletodo.dagger.scope.ViewModelScope
+import javax.inject.Inject
 
-class AddToDoPresenter(
+sealed class Result {
+    data class Error(val e: Throwable) : Result()
+    data class Success(val item: ToDoItem) : Result()
+}
+
+
+@ViewModelScope
+class AddTodoViewModel @Inject constructor(
     private val updateToDoItemUseCase: UpdateToDoItemUseCase,
     private val insertToDoItemUseCase: InsertToDoItemUseCase
-) :
-    BaseMvpPresenter<Contract.View>() {
-    private var view: Contract.View? = null
+) : BaseViewModel() {
+    private val result = MutableLiveData<Result?>()
+
+    fun getResult(): LiveData<Result?> {
+        return result
+    }
 
     fun updateOrInsertData(toDoItem: ToDoItem, update: Boolean) {
         val subscriber = object : BaseObserver<Int> {
@@ -24,12 +33,11 @@ class AddToDoPresenter(
             }
 
             override fun onSuccess(data: Int) {
-                getView()?.onUpdateDataSuccess()
-                getView()?.subscribeToAlarmManager(toDoItem)
+                result.postValue(Result.Success(toDoItem))
             }
 
             override fun onError(error: Throwable) {
-                getView()?.onUpdateDataError(error)
+                result.postValue(Result.Error(error))
             }
         }
         if (update) {

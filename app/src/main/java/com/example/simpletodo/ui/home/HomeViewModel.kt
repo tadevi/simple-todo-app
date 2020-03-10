@@ -1,19 +1,34 @@
 package com.example.simpletodo.ui.home
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.domain.entities.ToDoItem
 import com.example.domain.usecases.DeleteToDoItemUseCase
 import com.example.domain.usecases.GetToDoListUseCase
 import com.example.domain.usecases.InsertToDoItemUseCase
-import com.example.simpletodo.base.BaseMvpPresenter
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import com.example.simpletodo.base.BaseViewModel
+import com.example.simpletodo.dagger.scope.ViewModelScope
+import com.example.simpletodo.ui.addToDo.Result
+import javax.inject.Inject
 
-class HomePresenter constructor(
+
+@ViewModelScope
+class HomeViewModel @Inject constructor(
     private val getToDoListUseCase: GetToDoListUseCase,
     private val deleteToDoItemUseCase: DeleteToDoItemUseCase,
     private val insertToDoItemUseCase: InsertToDoItemUseCase
-) : BaseMvpPresenter<Contract.View>() {
-    private var lastItemDeleted: ToDoItem? = null
+) : BaseViewModel() {
+    private val lastItemDeleted = MutableLiveData<ToDoItem?>()
+    private val listTodoItem = MutableLiveData<List<ToDoItem>>()
+    private val resultStatus = MutableLiveData<Result?>()
+
+    fun getResultStatus(): LiveData<Result?> {
+        return resultStatus
+    }
+
+    fun getListTodoItem(): LiveData<List<ToDoItem>> {
+        return listTodoItem
+    }
 
     fun loadData() {
         executeUseCase(
@@ -25,11 +40,11 @@ class HomePresenter constructor(
                 }
 
                 override fun onSuccess(data: List<ToDoItem>) {
-                    getView()?.onRetrieveListTodoSuccess(data)
+                    listTodoItem.postValue(data)
                 }
 
                 override fun onError(error: Throwable) {
-                    getView()?.onRetrieveListTodoError(error)
+                    resultStatus.postValue(Result.Error(error))
                 }
             })
     }
@@ -44,18 +59,17 @@ class HomePresenter constructor(
                 }
 
                 override fun onSuccess(data: Int) {
-                    lastItemDeleted = toDoItem
-                    getView()?.onDeleteItemSuccess()
+                    lastItemDeleted.postValue(toDoItem)
                 }
 
                 override fun onError(error: Throwable) {
-                    getView()?.onDeleteItemError(error)
+                    resultStatus.postValue(Result.Error(error))
                 }
             })
     }
 
     fun undoItem() {
-        lastItemDeleted?.let {
+        lastItemDeleted.value?.let {
             executeUseCase(
                 insertToDoItemUseCase,
                 InsertToDoItemUseCase.Request(it),

@@ -1,59 +1,58 @@
 package com.example.simpletodo.ui.addToDo
 
-import android.content.Context
-import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.domain.entities.ToDoItem
 import com.example.simpletodo.R
-import com.example.simpletodo.base.BaseActivity
-import com.example.simpletodo.di.App
+import com.example.simpletodo.base.BaseFragment
 import com.example.simpletodo.utils.*
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog
-import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
-import io.reactivex.ObservableOnSubscribe
-import kotlinx.android.synthetic.main.activity_add_to_do.*
+import kotlinx.android.synthetic.main.fragment_add_to_do.*
+import org.koin.android.ext.android.get
 import java.util.*
 import javax.inject.Inject
 
 
-class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
+class AddTodoFragment : BaseFragment(), View.OnClickListener,
     CompoundButton.OnCheckedChangeListener, DatePickerDialog.OnDateSetListener,
     TimePickerDialog.OnTimeSetListener {
 
     companion object {
-        private const val EXTRA_TODO_ITEM = "extra_todo_item"
-        fun startActivity(context: Context, toDoItem: ToDoItem? = null, flag: Int? = null) {
-            val intent = Intent(context, AddToDoActivity::class.java)
-            intent.flags = flag ?: Intent.FLAG_ACTIVITY_NEW_TASK
-            toDoItem?.let {
-                intent.putExtra(EXTRA_TODO_ITEM, it)
-            }
-            context.startActivity(intent)
-
-        }
+        const val EXTRA_TODO_ITEM = "extra_todo_item"
     }
 
     @Inject
-    lateinit var presenter: AddToDoPresenter
+    lateinit var factory: ViewModelProvider.Factory
+    lateinit var viewModel: AddTodoViewModel
 
-    var todoItem = ToDoItem()
-    var editMode = false
-    var timeRemind: Calendar = Calendar.getInstance()
+    private var todoItem = ToDoItem()
+    private var editMode = false
+    private var timeRemind: Calendar = Calendar.getInstance()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_add_to_do)
 
-        (application as App).appComponent.addToDoActivity().inject(this)
-        presenter.attachView(this)
+    override fun getLayoutId(): Int {
+        return R.layout.fragment_add_to_do
+    }
 
-        registerCallback()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         initData()
+        initViewModel()
+        registerCallback()
+        hideToolbar()
+    }
+
+    fun hideToolbar() {
+        val actionBar = (activity as? AppCompatActivity)?.supportActionBar
+        actionBar?.apply {
+            this.hide()
+        }
     }
 
     private fun registerCallback() {
@@ -65,12 +64,13 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
     }
 
     private fun initData() {
-        if (intent.hasExtra(EXTRA_TODO_ITEM)) {
-            intent.getSerializableExtra(EXTRA_TODO_ITEM)?.let {
-                todoItem = it as ToDoItem
+        arguments?.let { argument ->
+            argument.getSerializable(EXTRA_TODO_ITEM)?.let { extraItem ->
+                todoItem = extraItem as ToDoItem
                 editMode = true
             }
         }
+
         swRemind.isChecked = !todoItem.isFinish
         etName.setText(todoItem.name)
         etDesc.setText(todoItem.description)
@@ -80,34 +80,50 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
         setVisibilityDateTime()
         etName.requestFocus()
 
-        val typeface = Typeface.createFromAsset(assets, "fonts/Aller_Regular.ttf")
-        etName.typeface = typeface
-        etDesc.typeface = typeface
-        tvDate.typeface = typeface
-        tvTime.typeface = typeface
-        tvAdditional.typeface = typeface
-        
+        context?.let {
+            val typeface = Typeface.createFromAsset(it.assets, "fonts/Aller_Regular.ttf")
+            etName.typeface = typeface
+            etDesc.typeface = typeface
+            tvDate.typeface = typeface
+            tvTime.typeface = typeface
+            tvAdditional.typeface = typeface
+        }
     }
 
-    override fun onUpdateDataSuccess() {
-        finish()
-    }
-
-    override fun onUpdateDataError(err: Throwable) {
-        DialogUtils.makeSimpleDialog(
+    fun initViewModel() {
+        viewModel = ViewModelProvider(
             this,
-            getString(R.string.title_error),
-            getString(R.string.message_error_name_must_not_empty_and_unique)
-        )
+            factory
+        ).get(AddTodoViewModel::class.java)
+        viewModel.getResult().observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+            it?.let {
+                when (it) {
+                    is Result.Success -> onUpdateDataSuccess(it.item)
+                    is Result.Error -> onUpdateDataError(it.e)
+                }
+            }
+        })
     }
 
-    override fun subscribeToAlarmManager(toDoItem: ToDoItem) {
-        AlarmUtils.updateAlarm(this, todoItem)
+    private fun onUpdateDataSuccess(item: ToDoItem) {
+        subscribeToAlarmManager(item)
+        findNavController().popBackStack()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        presenter.detachView()
+    private fun onUpdateDataError(err: Throwable) {
+        context?.let {
+            DialogUtils.makeSimpleDialog(
+                it,
+                getString(R.string.title_error),
+                getString(R.string.message_error_name_must_not_empty_and_unique)
+            )
+        }
+    }
+
+    private fun subscribeToAlarmManager(toDoItem: ToDoItem) {
+        context?.let {
+            AlarmUtils.updateAlarm(it, todoItem)
+        }
     }
 
     override fun onClick(v: View?) {
@@ -120,20 +136,20 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
                     isFinish = !swRemind.isChecked
                 )
                 if (todoItem.name.isNotEmpty()) {
-                    presenter.updateOrInsertData(todoItem, editMode)
+                    viewModel.updateOrInsertData(todoItem, editMode)
                 } else {
-                    finish()
+                    findNavController().popBackStack()
                     return
                 }
             }
             R.id.ibBack -> {
-                finish()
+                findNavController().popBackStack()
             }
             R.id.tvDate -> {
-                showDatePickerDialog(this, todoItem.datetime)
+                (activity as? AppCompatActivity)?.showDatePickerDialog(this, todoItem.datetime)
             }
             R.id.tvTime -> {
-                showTimePickerDialog(this, todoItem.datetime)
+                (activity as? AppCompatActivity)?.showTimePickerDialog(this, todoItem.datetime)
             }
         }
     }
@@ -166,11 +182,13 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
             || monthOfYear < now.get(Calendar.MONTH)
             || dayOfMonth < now.get(Calendar.DAY_OF_MONTH)
         ) {
-            DialogUtils.makeSimpleDialog(
-                this,
-                getString(R.string.title_error),
-                getString(R.string.message_invalid_date_in_past)
-            )
+            context?.let {
+                DialogUtils.makeSimpleDialog(
+                    it,
+                    getString(R.string.title_error),
+                    getString(R.string.message_invalid_date_in_past)
+                )
+            }
         } else {
             timeRemind.apply {
                 set(Calendar.YEAR, year)
@@ -191,11 +209,13 @@ class AddToDoActivity : BaseActivity(), Contract.View, View.OnClickListener,
     override fun onTimeSet(view: TimePickerDialog?, hourOfDay: Int, minute: Int, second: Int) {
         val now = Calendar.getInstance()
         if (hourOfDay < now.get(Calendar.HOUR_OF_DAY) || minute < now.get(Calendar.MINUTE)) {
-            DialogUtils.makeSimpleDialog(
-                this,
-                getString(R.string.title_error),
-                getString(R.string.message_invalid_date_in_past)
-            )
+            context?.let {
+                DialogUtils.makeSimpleDialog(
+                    it,
+                    getString(R.string.title_error),
+                    getString(R.string.message_invalid_date_in_past)
+                )
+            }
         } else {
             timeRemind.apply {
                 set(Calendar.HOUR_OF_DAY, hourOfDay)

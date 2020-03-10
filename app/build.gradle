@@ -32,7 +32,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    viewBinding{
+    viewBinding {
         true
     }
 }
@@ -52,7 +52,7 @@ dependencies {
     implementation project(":domain")
     implementation project(":data")
 
-    kapt "com.google.dagger:dagger-android-processor:2.14.1"
-    kapt "com.google.dagger:dagger-compiler:2.14.1"
+    kapt "com.google.dagger:dagger-android-processor:2.23.2"
+    kapt "com.google.dagger:dagger-compiler:2.23.2"
     kapt "androidx.room:room-compiler:2.2.4"
 }

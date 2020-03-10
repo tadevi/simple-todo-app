@@ -1,21 +1,23 @@
 package com.example.simpletodo.base
 
-import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
 import com.example.simpletodo.ui.setting.SettingsFragment
+import dagger.android.AndroidInjection
 
 abstract class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         getThemeConfig()
+
+        AndroidInjection.inject(this)
     }
 
-    fun getThemeConfig() {
+    protected fun getThemeConfig() {
         val preference = PreferenceManager.getDefaultSharedPreferences(this)
         val themeMode =
             preference.getString(
@@ -34,7 +36,7 @@ abstract class BaseActivity : AppCompatActivity() {
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
         if (current != AppCompatDelegate.getDefaultNightMode()) {
-            Log.e("###","Set theme for activity ${current}")
+            Log.e("###", "Set theme for activity ${current}")
             AppCompatDelegate.setDefaultNightMode(current)
         }
     }

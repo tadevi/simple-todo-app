@@ -7,13 +7,13 @@ import androidx.work.WorkerParameters
 import com.example.domain.repositories.ToDoRepository
 import com.example.domain.usecases.GetToDoListUseCase
 import com.example.simpletodo.utils.AlarmUtils
+import org.koin.java.KoinJavaComponent.inject
 import java.util.*
-import javax.inject.Inject
 
 class UpdateAlarmManagerWorker(private val context: Context, private val params: WorkerParameters) :
     Worker(context, params) {
-    @Inject
-    lateinit var repository: ToDoRepository
+
+    private val repository: ToDoRepository by inject(ToDoRepository::class.java)
 
     override fun doWork(): Result {
         Log.d("UpdateAlarmWorker", "Work Manager started")

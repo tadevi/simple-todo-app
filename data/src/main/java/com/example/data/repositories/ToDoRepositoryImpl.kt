@@ -5,11 +5,10 @@ import com.example.data.mapper.ToDoItemMapper
 import com.example.data.mapper.TodoMapper
 import com.example.domain.entities.ToDoItem
 import com.example.domain.repositories.ToDoRepository
-import io.reactivex.Completable
 import io.reactivex.Observable
-import javax.inject.Inject
 
-class ToDoRepositoryImpl @Inject constructor(private val toDoDao: ToDoDao) : ToDoRepository {
+
+class ToDoRepositoryImpl(private val toDoDao: ToDoDao) : ToDoRepository {
     override fun updateToDoItem(toDoItem: ToDoItem): Observable<Int> {
         return Observable.defer {
             toDoDao.update(TodoMapper.mapTo(toDoItem))
