@@ -4,8 +4,9 @@ import com.example.domain.entities.ToDoItem
 import com.example.domain.repositories.ToDoRepository
 import io.reactivex.Completable
 import io.reactivex.Observable
+import javax.inject.Inject
 
-class DeleteToDoItemUseCase(private val repository: ToDoRepository) :
+class DeleteToDoItemUseCase @Inject constructor(private val repository: ToDoRepository) :
     BaseUseCase<DeleteToDoItemUseCase.Request, Int> {
     override fun execute(request: Request): Observable<Int> {
         return repository.deleteToDoItem(request.toDoItem)

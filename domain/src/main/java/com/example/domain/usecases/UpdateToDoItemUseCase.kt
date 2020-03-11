@@ -4,8 +4,9 @@ import com.example.domain.entities.ToDoItem
 import com.example.domain.repositories.ToDoRepository
 import io.reactivex.Completable
 import io.reactivex.Observable
+import javax.inject.Inject
 
-class UpdateToDoItemUseCase(private val repository: ToDoRepository) :
+class UpdateToDoItemUseCase @Inject constructor(private val repository: ToDoRepository) :
     BaseUseCase<UpdateToDoItemUseCase.Request, Int> {
     override fun execute(request: Request): Observable<Int> {
         return repository.updateToDoItem(request.toDoItem)

@@ -7,12 +7,11 @@ import com.example.domain.usecases.DeleteToDoItemUseCase
 import com.example.domain.usecases.GetToDoListUseCase
 import com.example.domain.usecases.InsertToDoItemUseCase
 import com.example.simpletodo.base.BaseViewModel
-import com.example.simpletodo.dagger.scope.ViewModelScope
 import com.example.simpletodo.ui.addToDo.Result
 import javax.inject.Inject
 
 
-@ViewModelScope
+
 class HomeViewModel @Inject constructor(
     private val getToDoListUseCase: GetToDoListUseCase,
     private val deleteToDoItemUseCase: DeleteToDoItemUseCase,

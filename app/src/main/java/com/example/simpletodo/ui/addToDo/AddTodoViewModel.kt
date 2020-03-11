@@ -6,7 +6,6 @@ import com.example.domain.entities.ToDoItem
 import com.example.domain.usecases.InsertToDoItemUseCase
 import com.example.domain.usecases.UpdateToDoItemUseCase
 import com.example.simpletodo.base.BaseViewModel
-import com.example.simpletodo.dagger.scope.ViewModelScope
 import javax.inject.Inject
 
 sealed class Result {
@@ -15,7 +14,7 @@ sealed class Result {
 }
 
 
-@ViewModelScope
+
 class AddTodoViewModel @Inject constructor(
     private val updateToDoItemUseCase: UpdateToDoItemUseCase,
     private val insertToDoItemUseCase: InsertToDoItemUseCase
