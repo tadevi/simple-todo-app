@@ -5,6 +5,7 @@ import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -26,13 +27,10 @@ class HomeFragment : BaseFragment() {
 
     private lateinit var viewModel: HomeViewModel
 
-    private val navController = findNavController()
+    private lateinit var navController: NavController
 
-    private val toDoAdapter = ToDoAdapter {
-        val bundle = Bundle()
-        bundle.putSerializable(AddTodoFragment.EXTRA_TODO_ITEM, it)
-        navController.navigate(R.id.action_homeFragment_to_addTodoFragment, bundle)
-    }
+    private lateinit var toDoAdapter: ToDoAdapter
+
 
     override fun getLayoutId(): Int {
         return R.layout.fragment_home
@@ -103,6 +101,14 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun initUI() {
+        navController = findNavController()
+
+        toDoAdapter = ToDoAdapter {
+            val bundle = Bundle()
+            bundle.putSerializable(AddTodoFragment.EXTRA_TODO_ITEM, it)
+            navController.navigate(R.id.action_homeFragment_to_addTodoFragment, bundle)
+        }
+
         val dividerItemDecoration = DividerItemDecoration(
             rvTodo.context,
             LinearLayoutManager.VERTICAL

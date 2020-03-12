@@ -17,10 +17,9 @@ abstract class BaseActivity : AppCompatActivity(), HasSupportFragmentInjector {
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Fragment>
     override fun onCreate(savedInstanceState: Bundle?) {
+        AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         getThemeConfig()
-
-        AndroidInjection.inject(this)
     }
 
     protected fun getThemeConfig() {
@@ -42,7 +41,6 @@ abstract class BaseActivity : AppCompatActivity(), HasSupportFragmentInjector {
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
         if (current != AppCompatDelegate.getDefaultNightMode()) {
-            Log.e("###", "Set theme for activity ${current}")
             AppCompatDelegate.setDefaultNightMode(current)
         }
     }
